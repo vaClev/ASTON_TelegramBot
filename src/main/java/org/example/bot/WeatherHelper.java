@@ -11,9 +11,14 @@ public class WeatherHelper {
         GeoCoordinates coord = yandex.getCoordinatesByAddress(address);
         if(coord.getLatitude().equals("0") && coord.getLongitude().equals("0"))
         {
-            return "не могу найти это место на карте";
+            return "не могу найти это место на карте // скорректируйте свой запрос";
         }
         OpenMeteoRequester openMeteoRequester = new OpenMeteoRequester(coord.getLatitude(),coord.getLongitude());
-        return openMeteoRequester.getWeatherDescription();
+        if(yandex.isAccuracy){
+            return openMeteoRequester.getWeatherDescription();
+        }
+        return "найдено более одного места на карте по запросу:'"+address
+                +"'\nПогода в точке с координатами "+coord+"\n"
+                +openMeteoRequester.getWeatherDescription() +"\nпопробуйте указать более точный адрес";
     }
 }
