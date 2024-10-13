@@ -7,8 +7,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class HTTPGetter {
-    //TODO решить проблему использования русских букв одновременно с английскими
-    //https://geocode-maps.yandex.ru/1.x/?apikey=xxxxxx&geocode=Нижний+Новгород&format=json
     public String HttpGETstring(String urlToRead)  {
         StringBuilder result = new StringBuilder();
         URL url = null;

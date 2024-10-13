@@ -16,6 +16,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         String chatId = update.getMessage().getChatId().toString();
+        System.out.println("chat id =" + chatId);
         String userMessage = update.getMessage().getText();
         SendMessage botMessage = getBotAnswer(userMessage, chatId);
         try {
@@ -29,6 +30,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     private SendMessage getBotAnswer(String userMessage, String chatId) {
         SendMessage botMessage = new SendMessage();
         botMessage.setChatId(chatId);
+
         String answerText = getAnswerText(userMessage);
         botMessage.setText(answerText);
         return botMessage;
