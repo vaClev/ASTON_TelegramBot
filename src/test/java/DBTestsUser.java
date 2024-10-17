@@ -5,9 +5,10 @@ import java.util.ArrayList;
 
 public class DBTestsUser {
     public static void main(String[] args) {
-        getAllUsersTest();
-        getAllUserByTelegramChatId(1386864283);
+        //getAllUsersTest();
+        //getUserByTelegramChatId(1386864283);
         insertUser();
+        getAllUsersTest();
     }
     public static void getAllUsersTest()
     {
@@ -17,7 +18,7 @@ public class DBTestsUser {
             System.out.println(user);
         }
     }
-    public static void getAllUserByTelegramChatId(long telegramChatId)
+    public static void getUserByTelegramChatId(long telegramChatId)
     {
         UserEntity user =  new DBUserBehavior().getById(telegramChatId);
         System.out.println(user);

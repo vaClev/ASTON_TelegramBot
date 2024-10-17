@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class DBUserBehavior implements DBBehavior<UserEntity> {
+public class DBUserBehavior implements DBBehavior<UserEntity, Long> {
     private final DBHelper db = new DBHelper();
     private ResultSet resultSet;
     private UserEntity foundedUser;
@@ -48,7 +48,7 @@ public class DBUserBehavior implements DBBehavior<UserEntity> {
     }
 
     @Override
-    public UserEntity getById(long telegramChatId) {
+    public UserEntity getById(Long telegramChatId) {
         db.connect();
         foundedUser = null;
         PreparedStatement statement = db.getPreparedStatement(TEMPLATE_SQL_QUERY_SELECT_USER_BY_TELEGRAM_CHAT_ID);

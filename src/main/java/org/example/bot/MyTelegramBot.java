@@ -40,35 +40,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     private String getAnswerText(String userMessage, long telegramChatId) {
+        BotDialog dialog = new BotDialog(telegramChatId);
+        return dialog.getAnswer(userMessage);
+
         //TODO выделить содержимое данной функции в отдельный клас-"ответчик"
-        boolean isNewUser = new DBUserBehavior().isNewUser(telegramChatId);
-
-        //регистрация пользователя
-        if(userMessage.equals("/start") && isNewUser){
-            return "Добрый день. Пожалуйста зарегистрируйся чтобы использовать данный БОТ. Напиши свое имя или ник.";
-        }
-        if(isNewUser)
-        {
-            UserEntity user = new UserEntity(telegramChatId, userMessage);
-            boolean isInsert = new DBUserBehavior().insert(user);
-            return isInsert? "успешно зарегистрирован с именем "+userMessage :"ошибка регистрации - попробуйте позже";
-        }
-
-
-
-        //работа пользователя
-        UserEntity user = new DBUserBehavior().getById(telegramChatId);
-        if(userMessage.equals("/start")) //!isNewUser
-        {
-            return "Добрый день " + user.getUsername() +"! Укажи город (адрес по которому показать погоду):";
-        }
-        else {
-            String response = WeatherHelper.getTodayTemperature(userMessage);
-            RequestResponseEntry rrEntry = new RequestResponseEntry(userMessage, response, user);
-            boolean isInsert = new DBRequestsResponses().insert(rrEntry);
-            if(isInsert) System.out.println("запрос пользователя и ответ бота сохранены в БД");
-            return response;
-        }
     }
 
     @Override
