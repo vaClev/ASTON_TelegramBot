@@ -19,8 +19,10 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
     private ResultSet resultSet;
     private RequestResponseEntry foundedEntry;
     private ArrayList<UserEntity> entries;
-    private static final String SQL_QUERY_SELECT_ALL_ENTRIES = "SELECT id, datetime, request_text, response_text, userid FROM requests_and_responses;";
-    private static final String TEMPLATE_SQL_QUERY_SELECT_ENTRY_BY_ID = "SELECT id, datetime, request_text, response_text, userid FROM requests_and_responses WHERE id=?;";
+    private static final String SQL_QUERY_SELECT_ALL_ENTRIES =
+            "SELECT id, datetime, request_text, response_text, userid FROM requests_and_responses;";
+    private static final String TEMPLATE_SQL_QUERY_SELECT_ENTRY_BY_ID =
+            "SELECT id, datetime, addressid, response_text, userid FROM requests_and_responses2 WHERE id=?;";
     private static final String TEMPLATE_SQL_QUERY_INSERT_REQUEST_RESPONSE_ENTRY = """
             INSERT INTO requests_and_responses (id, datetime, request_text, response_text, userid)
             VALUES (gen_random_uuid(), ?, ?, ?, ?);""";
@@ -34,11 +36,29 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
     public ArrayList<RequestResponseEntry> getAll() {
         return null;
     }
+
+    //TODO переисать класс на работу с таблицей
+    /*CREATE TABLE requests_and_responses2
+            (
+                    id uuid NOT NULL,
+                    datetime timestamp NOT NULL,
+                    addressid uuid NOT NULL,
+                    response_text character varying(500) NOT NULL,
+                    userid bigint NOT NULL,
+                    FOREIGN KEY (userid) REFERENCES users(telegram_chat_id) ON DELETE CASCADE,
+                    FOREIGN KEY (addressid) REFERENCES addresses(id) ON DELETE CASCADE,
+                    PRIMARY KEY ( datetime, userid)
+            );*/
     private RequestResponseEntry buildRequestResponseEntryFromResultSet() throws SQLException {
+        UUID id = UUID.fromString(resultSet.getString("id"));
+
+        String addressId = resultSet.getString("addressid");
+        UUID addressUUID = UUID.fromString(addressId);
+        String address_text = new DBAddressBehavior().getById(addressUUID).getText();
         return new RequestResponseEntry(
-                UUID.fromString(resultSet.getString("id")),
+                id,
                 resultSet.getTimestamp("datetime"),
-                resultSet.getString("request_text"),
+                address_text,
                 resultSet.getString("response_text"),
                 resultSet.getLong("userid")
         );
@@ -55,7 +75,7 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
             toInsertUUID.setValue(id.toString());
             statement.setObject(1, toInsertUUID);
             resultSet = statement.executeQuery();
-            foundedEntry = getEntryFromResultSetOrNull();
+                foundedEntry = getEntryFromResultSetOrNull();
             resultSet.close();
             statement.close();
         } catch (SQLException e) {
@@ -74,6 +94,7 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
         return null;
     }
 
+    //TODO переисать на работу с новой таблицей
     @Override
     public boolean insert(RequestResponseEntry entry) {
         if (isNewEntry(entry.getId())) {
@@ -95,7 +116,6 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
         }
         return false;
     }
-
     private boolean isNewEntry(UUID id) {
         if (id == null) return true;
 
@@ -107,12 +127,13 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
     public boolean update(RequestResponseEntry object) {
         return false;
     }
-
     @Override
     public boolean delete(RequestResponseEntry object) {
         return false;
     }
 
+
+    //TODO переисать на работу с новой таблицей
     //вернет ответ на тот же запрос за последние х часов --- если он есть в базе
     public String getEqualResponse(int hours, String requestText) {
         db.connect();

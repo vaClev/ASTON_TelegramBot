@@ -1,3 +1,5 @@
+package DBBehavirTests;
+
 import org.example.DBActions.DBRequestsResponses;
 import org.example.DBActions.DBUserBehavior;
 import org.example.DBEntities.RequestResponseEntry;
@@ -7,9 +9,10 @@ import java.util.UUID;
 
 public class DBTestsRequestResponseEntry {
     public static void main(String[] args) {
-        //showByIDTest("7fb75247-83b0-43d5-90f7-ca3cb07f7ff4");
+        showByIDTest("de2cb0ac-efba-42b4-a439-d316bc97c9d6");
+        showByIDTest("71e5070f-4c9e-40e0-b078-bbbdca45d2b4");
         //insertTest();
-        showEqualResponse(6,"moscow");
+        //showEqualResponse(6,"moscow");
     }
     public static void showByIDTest(String StringId)
     {

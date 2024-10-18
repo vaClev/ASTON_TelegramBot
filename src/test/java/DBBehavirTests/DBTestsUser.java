@@ -1,3 +1,5 @@
+package DBBehavirTests;
+
 import org.example.DBActions.DBUserBehavior;
 import org.example.DBEntities.UserEntity;
 
