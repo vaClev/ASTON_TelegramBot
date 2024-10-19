@@ -7,6 +7,8 @@ import org.example.DBEntities.Address;
 import org.example.DBEntities.RequestResponseEntry;
 import org.example.DBEntities.UserEntity;
 
+import java.util.LinkedList;
+
 public class BotDialog {
     private String userMessage;
     private String response;
@@ -25,7 +27,6 @@ public class BotDialog {
         }
         return weatherMenu();
     }
-
     private String registrationMenu() {
         if (userMessage.equals("/start")) {
             return "Добрый день. Пожалуйста зарегистрируйся чтобы использовать данный БОТ. Напиши свое имя или ник.";
@@ -40,36 +41,43 @@ public class BotDialog {
             return "Добрый день " + user.getUsername() + "! Укажи свой город (или более точный адрес по которому показать погоду):";
         } else {
             boolean isUniqueAddress = new DBAddressBehavior().isNewAddress(userMessage);
-            if (isUniqueAddress){
+            if (isUniqueAddress) {
                 new DBAddressBehavior().insert(new Address(userMessage));
+                setAnswerFromAPIService();
+            } else if (trySetAnswerFromDB_last6hours()) {
+                response = "#Меня уже спрашивали недавно о погоде в этом месте : " + response;
+            } else {
+                setAnswerFromAPIService();
             }
-            else if (trySetAnswerFromDB_last6hours()) {
-                System.out.println(response);
-                //TODO сделай заись в БД
-                return "#Меня уже спрашивали недавно о погоде в этом месте : " + response;
-            }
-            setAnswerFromAPIService();
+            insertRequestResponseToDB(userMessage, response, user);
             return response;
         }
     }
+
+    private void insertRequestResponseToDB(String userMessage, String response, UserEntity user) {
+        RequestResponseEntry rr = new RequestResponseEntry(userMessage, response, user);
+        boolean isInsert = new DBRequestsResponses().insert(rr);
+        if (isInsert) {
+            System.out.println("запрос пользователя и ответ бота записаны в базу данных");
+        }
+    }
     private boolean trySetAnswerFromDB_last6hours() {
-        String historyAnswer = new DBRequestsResponses().getEqualResponse(6, userMessage);
-        if (historyAnswer != null) {
+        LinkedList<String> historyAnswers = new DBRequestsResponses().getEqualResponses(6, userMessage);
+        if (historyAnswers == null) {
+            return false;
+        }
+        for (var historyAnswer : historyAnswers) {
+            if (historyAnswer.toUpperCase().contains("#Меня уже спрашивали".toUpperCase())) {
+                continue;
+            }
             response = historyAnswer;
             return true;
         }
         return false;
     }
-    private void setAnswerFromAPIService()
-    {
+    private void setAnswerFromAPIService() {
         response = WeatherHelper.getTodayTemperature(userMessage);
-
-        //TODO сделай запись в БД
-        RequestResponseEntry rrEntry = new RequestResponseEntry(userMessage, response, user);
-        boolean isInsert = new DBRequestsResponses().insert(rrEntry);
-        if (isInsert) System.out.println("запрос пользователя и ответ бота сохранены в БД");
     }
-
     private boolean isNewUser() {
         return new DBUserBehavior().isNewUser(telegramChatId);
     }

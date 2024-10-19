@@ -21,6 +21,8 @@ public class DBAddressBehavior implements DBBehavior<Address, UUID> {
             "SELECT COUNT(1) FROM addresses WHERE address_text = ?;";
     private static final String TEMPLATE_SQL_QUERY_INSERT_ADDRESS =
             "INSERT INTO addresses (id, address_text) VALUES (gen_random_uuid(),?)";
+    private static final String TEMPLATE_SQL_QUERY_SELECT_ID_BY_ADDRESS =
+            "SELECT id, address_text FROM addresses WHERE address_text=?;";
 
     //TODO getAll
     @Override
@@ -112,4 +114,30 @@ public class DBAddressBehavior implements DBBehavior<Address, UUID> {
         return false;
     }
 
+    public UUID getIdByAddressText(String addressText) {
+        if (addressText == null) return null;
+        db.connect();
+        UUID foundedID;
+        PreparedStatement statement = db.getPreparedStatement(TEMPLATE_SQL_QUERY_SELECT_ID_BY_ADDRESS);
+        try {
+            statement.setObject(1, addressText);
+            resultSet = statement.executeQuery();
+                foundedID = getIdFromResultSetOrNull();
+            resultSet.close();
+            statement.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage() + Arrays.toString(e.getStackTrace()));
+        }
+        db.close();
+        if (foundedID == null) {
+            System.out.println("SQL запрос не вернул результата по address_text =" + addressText);
+        }
+        return foundedID;
+    }
+    private UUID getIdFromResultSetOrNull() throws SQLException {
+        if (resultSet.next()) {
+            return UUID.fromString(resultSet.getString("id"));
+        }
+        return null;
+    }
 }

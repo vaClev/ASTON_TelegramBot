@@ -18,7 +18,7 @@ CREATE TABLE addresses
 );
 
 -- Таблица запросов пользователей и ответов бота
-CREATE TABLE requests_and_responses2
+CREATE TABLE requests_and_responses
 (
 	id uuid NOT NULL,  
     datetime timestamp NOT NULL,

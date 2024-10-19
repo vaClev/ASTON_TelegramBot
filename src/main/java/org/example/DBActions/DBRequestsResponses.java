@@ -1,5 +1,6 @@
 package org.example.DBActions;
 
+import org.example.DBEntities.Address;
 import org.example.DBEntities.RequestResponseEntry;
 import org.example.DBEntities.UserEntity;
 import org.postgresql.util.PGobject;
@@ -11,7 +12,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.LinkedList;
 import java.util.UUID;
 
 public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUID> {
@@ -22,33 +23,21 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
     private static final String SQL_QUERY_SELECT_ALL_ENTRIES =
             "SELECT id, datetime, request_text, response_text, userid FROM requests_and_responses;";
     private static final String TEMPLATE_SQL_QUERY_SELECT_ENTRY_BY_ID =
-            "SELECT id, datetime, addressid, response_text, userid FROM requests_and_responses2 WHERE id=?;";
+            "SELECT id, datetime, addressid, response_text, userid FROM requests_and_responses WHERE id=?;";
     private static final String TEMPLATE_SQL_QUERY_INSERT_REQUEST_RESPONSE_ENTRY = """
-            INSERT INTO requests_and_responses (id, datetime, request_text, response_text, userid)
+            INSERT INTO requests_and_responses (id, datetime, addressid, response_text, userid)
             VALUES (gen_random_uuid(), ?, ?, ?, ?);""";
     private static final String TEMPLATE_SQL_QUERY_SELECT_EQUALS_RESPONSE = """
             SELECT datetime, response_text
             FROM requests_and_responses
-            WHERE datetime >= ? and request_text =?;
+            WHERE datetime >= ? and addressid =?;
             """;
 
+    //TODO
     @Override
     public ArrayList<RequestResponseEntry> getAll() {
         return null;
     }
-
-    //TODO переисать класс на работу с таблицей
-    /*CREATE TABLE requests_and_responses2
-            (
-                    id uuid NOT NULL,
-                    datetime timestamp NOT NULL,
-                    addressid uuid NOT NULL,
-                    response_text character varying(500) NOT NULL,
-                    userid bigint NOT NULL,
-                    FOREIGN KEY (userid) REFERENCES users(telegram_chat_id) ON DELETE CASCADE,
-                    FOREIGN KEY (addressid) REFERENCES addresses(id) ON DELETE CASCADE,
-                    PRIMARY KEY ( datetime, userid)
-            );*/
     private RequestResponseEntry buildRequestResponseEntryFromResultSet() throws SQLException {
         UUID id = UUID.fromString(resultSet.getString("id"));
 
@@ -75,7 +64,7 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
             toInsertUUID.setValue(id.toString());
             statement.setObject(1, toInsertUUID);
             resultSet = statement.executeQuery();
-                foundedEntry = getEntryFromResultSetOrNull();
+            foundedEntry = getEntryFromResultSetOrNull();
             resultSet.close();
             statement.close();
         } catch (SQLException e) {
@@ -94,16 +83,23 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
         return null;
     }
 
-    //TODO переисать на работу с новой таблицей
     @Override
     public boolean insert(RequestResponseEntry entry) {
         if (isNewEntry(entry.getId())) {
+            UUID addressUUID = getAddressIdFromDBorNull(entry.getRequestText());
+            if(addressUUID==null) return false;
+
             //сделай новую запись в БД
             db.connect();
             PreparedStatement statement = db.getPreparedStatement(TEMPLATE_SQL_QUERY_INSERT_REQUEST_RESPONSE_ENTRY);
             try {
                 statement.setTimestamp(1, entry.getDatetimeAsTimestamp());
-                statement.setString(2, entry.getRequestText());
+
+                PGobject toInsertUUID = new PGobject();
+                toInsertUUID.setType("uuid");
+                toInsertUUID.setValue(addressUUID.toString());
+                statement.setObject(2, toInsertUUID);
+
                 statement.setString(3, entry.getResponseText());
                 statement.setLong(4, entry.getUserId());
                 statement.executeUpdate();
@@ -116,6 +112,13 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
         }
         return false;
     }
+    private UUID getAddressIdFromDBorNull(String addressText) {
+        UUID addressUUID = new DBAddressBehavior().getIdByAddressText(addressText);
+        if (addressUUID == null) {
+            System.out.println("Адресс "+ addressText+"не найден в таблице addresses");
+        }
+        return addressUUID;
+    }
     private boolean isNewEntry(UUID id) {
         if (id == null) return true;
 
@@ -123,47 +126,55 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
         return request == null;
     }
 
+    //TODO
     @Override
     public boolean update(RequestResponseEntry object) {
         return false;
     }
+
+    //TODO
     @Override
     public boolean delete(RequestResponseEntry object) {
         return false;
     }
 
 
-    //TODO переисать на работу с новой таблицей
+    
     //вернет ответ на тот же запрос за последние х часов --- если он есть в базе
-    public String getEqualResponse(int hours, String requestText) {
+    public LinkedList<String> getEqualResponses(int hours, String requestText) {
+        UUID addressID = getAddressIdFromDBorNull(requestText);
+        if(addressID==null) return null;
+
         db.connect();
-        String response = null;
+        LinkedList<String> responses;
         LocalDateTime beforeNow = LocalDateTime.now().minusHours(hours);
         Timestamp timestamp = Timestamp.valueOf(beforeNow);
         PreparedStatement statement = db.getPreparedStatement(TEMPLATE_SQL_QUERY_SELECT_EQUALS_RESPONSE);
         try {
             statement.setTimestamp(1, timestamp);
-            statement.setString(2, requestText);
+                PGobject toInsertUUID = new PGobject();
+                toInsertUUID.setType("uuid");
+                toInsertUUID.setValue(addressID.toString());
+                statement.setObject(2, toInsertUUID);
             resultSet = statement.executeQuery();
-                response = getResponseFromResultSet();
+                responses = getResponseFromResultSet();
             resultSet.close();
             statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e.getMessage());
         }
         db.close();
-        return response;
+        return responses;
     }
-    private String getResponseFromResultSet() throws SQLException {
-        if(resultSet.next())
-        {
+    private LinkedList<String> getResponseFromResultSet() throws SQLException {
+        LinkedList<String> lastTimeResponses = new LinkedList<>();
+        while (resultSet.next()) {
             LocalDateTime dateTime = resultSet.getTimestamp("datetime").toLocalDateTime();
-            DateTimeFormatter pattern =  DateTimeFormatter.ofPattern("HH:mm:ss");
+            DateTimeFormatter pattern = DateTimeFormatter.ofPattern("HH:mm:ss");
             String stringTime = dateTime.format(pattern);
 
-            return stringTime+" "+
-                   resultSet.getString("response_text");
+            lastTimeResponses.add(stringTime + " " +resultSet.getString("response_text"));
         }
-        return null;
+        return lastTimeResponses;
     }
 }
