@@ -1,9 +1,5 @@
 package org.example.bot;
 
-import org.example.DBActions.DBRequestsResponses;
-import org.example.DBActions.DBUserBehavior;
-import org.example.DBEntities.RequestResponseEntry;
-import org.example.DBEntities.UserEntity;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -42,8 +38,6 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     private String getAnswerText(String userMessage, long telegramChatId) {
         BotDialog dialog = new BotDialog(telegramChatId);
         return dialog.getAnswer(userMessage);
-
-        //TODO выделить содержимое данной функции в отдельный клас-"ответчик"
     }
 
     @Override

@@ -1,8 +1,7 @@
-package org.example.DBActions;
+package org.example.JDBC.DBActions;
 
-import org.example.DBEntities.Address;
-import org.example.DBEntities.RequestResponseEntry;
-import org.example.DBEntities.UserEntity;
+import org.example.JDBC.DBEntities.RequestResponseEntry;
+import org.example.JDBC.DBEntities.UserEntity;
 import org.postgresql.util.PGobject;
 
 import java.sql.PreparedStatement;
@@ -139,7 +138,7 @@ public class DBRequestsResponses implements DBBehavior<RequestResponseEntry, UUI
     }
 
 
-    
+
     //вернет ответ на тот же запрос за последние х часов --- если он есть в базе
     public LinkedList<String> getEqualResponses(int hours, String requestText) {
         UUID addressID = getAddressIdFromDBorNull(requestText);

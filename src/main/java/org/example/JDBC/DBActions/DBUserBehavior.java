@@ -1,6 +1,6 @@
-package org.example.DBActions;
+package org.example.JDBC.DBActions;
 
-import org.example.DBEntities.UserEntity;
+import org.example.JDBC.DBEntities.UserEntity;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,6 +23,7 @@ public class DBUserBehavior implements DBBehavior<UserEntity, Long> {
         try {
             resultSet = statement.executeQuery();
             collectUsers();
+            resultSet.close();
             statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e.getMessage());

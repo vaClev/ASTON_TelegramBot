@@ -1,6 +1,6 @@
-package org.example.DBActions;
+package org.example.JDBC.DBActions;
 
-import org.example.DBEntities.Address;
+import org.example.JDBC.DBEntities.Address;
 import org.postgresql.util.PGobject;
 
 import java.sql.PreparedStatement;

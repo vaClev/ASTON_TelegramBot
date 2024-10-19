@@ -1,9 +1,9 @@
 package DBBehavirTests;
 
-import org.example.DBActions.DBRequestsResponses;
-import org.example.DBActions.DBUserBehavior;
-import org.example.DBEntities.RequestResponseEntry;
-import org.example.DBEntities.UserEntity;
+import org.example.JDBC.DBActions.DBRequestsResponses;
+import org.example.JDBC.DBActions.DBUserBehavior;
+import org.example.JDBC.DBEntities.RequestResponseEntry;
+import org.example.JDBC.DBEntities.UserEntity;
 
 import java.util.LinkedList;
 import java.util.UUID;

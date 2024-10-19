@@ -1,7 +1,7 @@
 package DBBehavirTests;
 
-import org.example.DBActions.DBAddressBehavior;
-import org.example.DBEntities.Address;
+import org.example.JDBC.DBActions.DBAddressBehavior;
+import org.example.JDBC.DBEntities.Address;
 
 import java.util.UUID;
 

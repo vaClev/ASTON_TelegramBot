@@ -1,6 +1,7 @@
-package org.example.DBEntities;
+package org.example.JDBC.DBEntities;
 
-import org.example.DBActions.DBUserBehavior;
+import org.example.JDBC.DBActions.DBUserBehavior;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.UUID;

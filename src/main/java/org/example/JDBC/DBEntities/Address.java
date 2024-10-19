@@ -1,4 +1,4 @@
-package org.example.DBEntities;
+package org.example.JDBC.DBEntities;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package org.example.DBEntities;
+package org.example.JDBC.DBEntities;
 
 public class UserEntity {
     private long id;

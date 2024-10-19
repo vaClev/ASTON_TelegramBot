@@ -1,7 +1,7 @@
 package DBBehavirTests;
 
-import org.example.DBActions.DBUserBehavior;
-import org.example.DBEntities.UserEntity;
+import org.example.JDBC.DBActions.DBUserBehavior;
+import org.example.JDBC.DBEntities.UserEntity;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package org.example.DBActions;
+package org.example.JDBC.DBActions;
 import java.util.ArrayList;
 
 public interface DBBehavior<T, ID> {
